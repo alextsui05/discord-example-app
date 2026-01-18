@@ -1,0 +1,23 @@
+name = "discord-getting-started"
+main = "app.js"
+account_id = "f2bed82550007c81c309377947e47e42"
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2026-01-17"
+
+[vars]
+APP_ID = "1462141501306961940"
+PUBLIC_KEY = "e756f515706b60344db04f49eb43ab7f2d9b720a195a17b1ed5b06a9befd1c66"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[durable_objects]
+bindings = [
+    { name = "ACTIVE_GAMES", class_name = "GameDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GameDurableObject"]
