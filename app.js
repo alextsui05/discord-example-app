@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import {
   ButtonStyleTypes,
   InteractionResponseFlags,
@@ -10,9 +9,6 @@ import { getRandomEmoji, DiscordRequest } from './utils.js';
 import { getShuffledOptions, getResult } from './game.js';
 import nacl from 'tweetnacl';
 import { DurableObject } from 'cloudflare:workers';
-
-// Get port, or default to 3000
-const PORT = process.env.PORT || 3000;
 
 export class GameDurableObject extends DurableObject {
   async getGame(id) {

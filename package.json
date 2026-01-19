@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node app.js",
     "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "dev": "npx wrangler dev"
   },
   "author": "Shay DeWael",
   "license": "MIT",

@@ -1,6 +1,11 @@
-# Getting Started app for Discord
+# Getting Started app for Discord (Cloudflare Worker version)
 
-This project contains a basic rock-paper-scissors-style Discord app written in JavaScript, built for the [getting started guide](https://discord.com/developers/docs/getting-started).
+This project contains a basic rock-paper-scissors-style Discord app written in JavaScript and run in Cloudflare Workers, based on the [getting started guide](https://discord.com/developers/docs/getting-started).
+
+The tutorial has you run your Discord app locally and expose it to the net with ngrok so you can use it to handle interactions from Discord.
+However, ngrok is not a permanent solution, and you'll need to use a permanent solution for production.
+One option is to use Cloudflare Workers, a serverless platform with a generous free tier that is perfect for small projects like this one.
+See deployment notes on the bottom of this file for more information.
 
 ![Demo of app](https://github.com/discord/discord-example-app/raw/main/assets/getting-started-demo.gif?raw=true)
 
@@ -66,7 +71,7 @@ npm run register
 After your credentials are added, go ahead and run the app:
 
 ```
-node app.js
+npx wrangler dev
 ```
 
 > ⚙️ A package [like `nodemon`](https://github.com/remy/nodemon), which watches for local changes and restarts your app, may be helpful while locally developing.
@@ -77,10 +82,10 @@ If you aren't following the [getting started guide](https://discord.com/develope
 
 The project needs a public endpoint where Discord can send requests. To develop and test locally, you can use something like [`ngrok`](https://ngrok.com/) to tunnel HTTP traffic.
 
-Install ngrok if you haven't already, then start listening on port `3000`:
+Install ngrok if you haven't already, then start listening on port `8787`:
 
 ```
-ngrok http 3000
+ngrok http 8787
 ```
 
 You should see your connection open:
@@ -89,7 +94,7 @@ You should see your connection open:
 Tunnel Status                 online
 Version                       2.0/2.0
 Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://1234-someurl.ngrok.io -> localhost:3000
+Forwarding                    https://1234-someurl.ngrok.io -> localhost:8787
 
 Connections                  ttl     opn     rt1     rt5     p50     p90
                               0       0       0.00    0.00    0.00    0.00
@@ -106,3 +111,46 @@ Click **Save Changes**, and your app should be ready to run 🚀
 - Browse the `examples/` folder in this project for smaller, feature-specific code examples
 - Join the **[Discord Developers server](https://discord.gg/discord-developers)** to ask questions about the API, attend events hosted by the Discord API team, and interact with other devs.
 - Check out **[community resources](https://discord.com/developers/docs/topics/community-resources#community-resources)** for language-specific tools maintained by community members.
+
+## Deploying to Cloudflare Workers
+
+First you'll need a Cloudflare account. Then you can log in to it using the `wrangler` CLI tool:
+
+```
+npx wrangler login
+```
+
+Next you should update the `wrangler.toml` file with your Cloudflare account ID and Discord app details.
+Then you can deploy the app:
+
+```
+$ npx wrangler deploy
+
+ ⛅️ wrangler 4.59.2
+───────────────────
+Total Upload: 144.63 KiB / gzip: 29.46 KiB
+Worker Startup Time: 22 ms
+Your Worker has access to the following bindings:
+Binding                                                            Resource
+env.ACTIVE_GAMES (GameDurableObject)                               Durable Object
+env.APP_ID ("1462141501306961940")                                 Environment Variable
+env.PUBLIC_KEY ("e756f515706b60344db04f49eb43ab7f2d9b7...")        Environment Variable
+
+Uploaded discord-getting-started (3.04 sec)
+Deployed discord-getting-started triggers (1.52 sec)
+  https://[YOUR_WORKER_NAME].[USERNAME]workers.dev
+Current Version ID: 1bb8c9e6-4bd5-4cd5-b2b5-b805cbf0d1a2
+```
+
+### Workaround for `require_streams(...) is not a function`
+
+While support is improving, Cloudflare Workers environment is not standard Node.js, which causes issues like [this issue](https://github.com/cloudflare/workers-sdk/issues/9309) with the `iconv-lite` package.
+As of 2026-01-17, there is no fix but there is a [workaround](https://github.com/cloudflare/workers-sdk/issues/9309#issuecomment-3019322829).
+If you remove the following code from `node_modules/iconv-lite/package.json`:
+```
+    "browser": {
+        "./lib/extend-node": false,
+        "./lib/streams": false
+    },
+```
+The error will disappear and you can deploy.
