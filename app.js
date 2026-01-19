@@ -124,7 +124,7 @@ async function handleChallenge(body, activeGames) {
   // TODO: Store user's object choice
   const objectName = body.data.options[0].value;
 
-  activeGames.setGame(id, {
+  await activeGames.setGame(id, {
     id: userId,
     objectName,
   });
@@ -215,8 +215,7 @@ async function handleComponent(body, env, ctx, activeGames) {
       return new Response(JSON.stringify({}));
     }
 
-
-    await activeGames.deleteGame(gameId);
+    ctx.waitUntil(activeGames.deleteGame(gameId));
 
     async function updateMessage() {
       const endpoint = `webhooks/${env.APP_ID}/${body.token}/messages/${body.message.id}`;
