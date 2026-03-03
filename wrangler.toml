@@ -25,3 +25,10 @@ bindings = [
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["GameDurableObject"]
+
+[[queues.producers]]
+queue = "pinyin-lookups"
+binding = "PINYIN_LOOKUPS"
+
+[[queues.consumers]]
+queue = "pinyin-lookups"
