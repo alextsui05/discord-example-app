@@ -76,11 +76,28 @@ const JYUTPING_COMMAND = {
   ],
 };
 
+const CANGJIE_COMMAND = {
+  name: "cangjie",
+  description: "Get cangjie for a snippet of Chinese",
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+  options: [
+    {
+      type: 3,
+      name: "text",
+      description: "Text to get cangjie for",
+      required: true,
+    },
+  ],
+};
+
 const ALL_COMMANDS = [
   TEST_COMMAND,
   CHALLENGE_COMMAND,
   PINYIN_COMMAND,
   JYUTPING_COMMAND,
+  CANGJIE_COMMAND,
 ];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
