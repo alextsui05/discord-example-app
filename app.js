@@ -24,7 +24,7 @@ export class GameDurableObject extends DurableObject {
   }
 }
 
-function testResponse() {
+function testResponse(body) {
   return new Response(
     JSON.stringify({
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -120,6 +120,9 @@ async function postMessage(text, url, token, appId) {
         "DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)",
     },
   });
+  // delete original message
+  const deleteEndpoint = `webhooks/${appId}/${token}/messages/@original`;
+  await DiscordRequest(deleteEndpoint, { method: "DELETE" });
 }
 
 export default {
@@ -163,7 +166,7 @@ export default {
       switch (name) {
         case "test":
           // Send a message into the channel where command was triggered from
-          return testResponse();
+          return testResponse(body);
         case "challenge":
           return handleChallenge(body, activeGames);
         case "pinyin":
