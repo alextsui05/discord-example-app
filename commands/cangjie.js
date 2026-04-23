@@ -3,7 +3,6 @@ import {
   InteractionResponseFlags,
   MessageComponentTypes,
 } from "discord-interactions";
-import { DiscordRequest } from "../utils.js";
 
 export async function cangjieResponse(body, env) {
   const inputOptions = Object.fromEntries(
@@ -14,26 +13,24 @@ export async function cangjieResponse(body, env) {
   };
   const urlOptions = new URLSearchParams(options);
 
-  await env.PINYIN_LOOKUPS.send({
-    type: "cangjie",
-    data: {
-      text: inputOptions.text,
-      url: `https://cangjie-lookup.alextsui05.workers.dev/?${urlOptions.toString()}`,
-      token: body.token,
-    },
-  });
+  const lookup = await getCangjieLookupTable();
+
+  const contents = [`# ${inputOptions.text}\n`];
+  for (const char of inputOptions.text) {
+    if (lookup[char]) {
+      contents.push(`**${char}** ${mapToCangjie(lookup[char][0])}`);
+    }
+  }
 
   return new Response(
     JSON.stringify({
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
-        flags:
-          InteractionResponseFlags.IS_COMPONENTS_V2 |
-          InteractionResponseFlags.EPHEMERAL,
+        flags: InteractionResponseFlags.IS_COMPONENTS_V2,
         components: [
           {
             type: MessageComponentTypes.TEXT_DISPLAY,
-            content: `Processing, give it a few seconds...\n\`${inputOptions.text}\``,
+            content: contents.join("\n"),
           },
         ],
       },
@@ -46,32 +43,45 @@ export async function cangjieResponse(body, env) {
   );
 }
 
-export async function processCangjieMessage(text, url, token, appId) {
-  const response = await fetch(url);
-  const data = await response.json();
-  const contents = [`# ${text}\n`];
-  for (const item of data) {
-    contents.push(`**${item["char"]}** ${item.cangjie}`);
-    // contents.push(`${JSON.stringify(item)}`);
-  }
+const cangjie_chars = {
+  a: "日",
+  b: "月",
+  c: "金",
+  d: "木",
+  e: "水",
+  f: "火",
+  g: "土",
+  h: "竹",
+  i: "戈",
+  j: "十",
+  k: "大",
+  l: "中",
+  m: "一",
+  n: "弓",
+  o: "人",
+  p: "心",
+  q: "手",
+  r: "口",
+  s: "尸",
+  t: "廿",
+  u: "山",
+  v: "女",
+  w: "田",
+  x: "難",
+  y: "卜",
+  z: "重",
+};
 
-  const endpoint = `https://discord.com/api/v10/webhooks/${appId}/${token}`;
-  const formData = new FormData();
-  const payload = {
-    content: contents.join("\n"),
-  };
-  formData.append("payload_json", JSON.stringify(payload));
-  await fetch(endpoint, {
-    method: "POST",
-    body: formData,
-    headers: {
-      Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
-      "User-Agent":
-        "DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)",
-    },
-  });
+const mapToCangjie = (s) => {
+  return s
+    .split("")
+    .map((c) => cangjie_chars[c] || c)
+    .join("");
+};
 
-  // delete original message
-  const deleteEndpoint = `webhooks/${appId}/${token}/messages/@original`;
-  await DiscordRequest(deleteEndpoint, { method: "DELETE" });
+async function getCangjieLookupTable() {
+  const response = await fetch(
+    "https://gaveta.atsui.click/cj5-tc-rev.v1.min.json.br",
+  );
+  return response.json();
 }

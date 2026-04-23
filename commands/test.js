@@ -5,7 +5,7 @@ import {
 } from "discord-interactions";
 import { getRandomEmoji } from "../utils.js";
 
-export default function testResponse(body) {
+export default async function testResponse(body, env) {
   return new Response(
     JSON.stringify({
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

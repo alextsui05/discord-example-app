@@ -3,7 +3,7 @@ import nacl from "tweetnacl";
 import { DurableObject } from "cloudflare:workers";
 import testResponse from "./commands/test.js";
 import { pinyinResponse, processPinyinMessage } from "./commands/pinyin.js";
-import { cangjieResponse, processCangjieMessage } from "./commands/cangjie.js";
+import { cangjieResponse } from "./commands/cangjie.js";
 import {
   challengeResponse,
   handleChallengeAccepted,
@@ -62,14 +62,6 @@ export default {
             env.APP_ID,
           );
           break;
-        case "cangjie":
-          await processCangjieMessage(
-            message.body.data.text,
-            message.body.data.url,
-            message.body.data.token,
-            env.APP_ID,
-          );
-          break;
         default:
           console.error(`unknown message type: ${message.body.type}`);
           break;
@@ -95,7 +87,7 @@ async function handleSlashCommand(body, env, ctx, activeGames) {
   switch (name) {
     case "test":
       // Send a message into the channel where command was triggered from
-      return testResponse(body);
+      return await testResponse(body, env);
     case "challenge":
       return await challengeResponse(body, activeGames);
     case "pinyin":
